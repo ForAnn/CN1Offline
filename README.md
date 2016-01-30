@@ -33,7 +33,7 @@ Note: This project is not supported by CN1 team so do not ask about it on their 
 
 ##Links to used projects
 
-CN1 - <https://github.com/codenameone/CodenameOne>
-Cygwin - <https://cygwin.com/>
-XMLVM - <http://xmlvm.org/overview/>
++CN1 - <https://github.com/codenameone/CodenameOne>
++Cygwin - <https://cygwin.com/>
++XMLVM - <http://xmlvm.org/overview/>
 
