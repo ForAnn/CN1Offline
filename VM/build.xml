@@ -1,0 +1,94 @@
+<!--
+ * Copyright (c) 2016 by ForAnn.eu
+ *
+ * Project Info:  http://www.xmlvm.org
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; 
+-->
+
+<project name="cn1offline" default="WP8_3.3" basedir=".">
+
+	<presetdef name="javac">
+		<javac includeantruntime="false" />
+	</presetdef>
+
+	<target name="init" depends="clean">
+		<!-- initialize properties -->
+		<property file="local.properties" />
+		<property file="cn1offline.properties" />
+		<!-- Create the time stamp -->
+		<tstamp />
+		<delete dir="${cn1offline.tmp}" />
+		<!-- Create the build directory -->
+		<mkdir dir="${cn1offline.tmp}" />
+	</target>
+	<target name="WP8_3.1" depends="init" description="cross compile to c# using last cn1 java api">
+		<crosscompile cn1dir="${cn1offline.dir}CN1/3.1/" />
+	</target>
+	<target name="WP8_3.2" depends="init" description="cross compile to c# using last cn1 java api">
+		<crosscompile cn1dir="${cn1offline.dir}CN1/3.2/" />
+	</target>	
+
+	<target name="WP8_3.3" depends="init" description="cross compile to c# using last cn1 java api">
+		<crosscompile cn1dir="${cn1offline.dir}CN1/3.3/" />
+	</target>
+
+	<target name="clean" description="Remove all build files">
+		<delete dir="${cn1offline.tmp}" />
+	</target>
+
+	<macrodef name="crosscompile">
+		<attribute name="cn1dir" /> <!-- cn1 directory -->
+		<attribute name="classes" default="CodenameOne.jar" /> <!-- directory/jar containing cn1 classes -->
+		<attribute name="native" default="" /> <!-- directory containing cn1 native files to copy on compiled files -->
+		<sequential>
+			<!-- directory containing cn1 classes -->
+			<property  name="cn1classes" value="@{cn1dir}@{classes}" />
+			<!-- directory containing cn1 native files to copy on compiled files -->
+			<condition  property="cn1native" value="" else="@{cn1dir}@{native}">
+				<equals arg1="@{native}" arg2="" />
+			</condition>
+			<condition  property="if_copy" value="" else="**">
+				<equals arg1="@{native}" arg2="" />
+			</condition>
+			<echo message="Generating/updating Windows Phone 8 project" />
+			<!-- java -Xmx4G -jarD:\usr\local\lib\xmlvm\xmlvm.jar - -debug=error - -in=D:\Work_D\CodenameOne\FMap_App\build\classes - -in=D:\Work_D\CodenameOne\CodenameOne\CodenameOne\build\classes - -out=D:\Work_D\CodenameOne\FMap_App\XMLVM\src1 - -target=csharp   - -in=D:\Work_D\CodenameOne\CodenameOne\Factory\build\classes -->
+			<!-- cross compile cn1 sources -->
+			<java maxmemory="4G" jar="${cn1offline.XMLVM.jar}" fork="true">
+				<arg value="--debug=error"/>
+				<arg value="--in=${cn1offline.build.classes}"/>
+				<arg value="--in=${cn1classes}"/>
+				<arg value="--out=${cn1offline.tmp}"/>
+				<arg value="--target=csharp"/>
+			</java> 
+			
+			<!-- copy (overwriting) native codes -->
+				<copy todir="${cn1offline.tmp}">
+					<fileset dir="${cn1native}">
+						<include name="${if_copy}" />
+					</fileset>
+				</copy>
+
+			
+			<!-- copy into projest src folder only changed files (using checksum comparation)
+			rsync - -delete -a -vrc src8_0/ src -->
+			<exec executable="${cn1offline.rsync}">
+				<arg value="--delete" />
+				<arg value="-avrc" />
+				<arg value="${cn1offline.tmp}" />
+				<arg value="${cn1offline.WP8.src}" />
+			</exec>		
+		</sequential>
+	</macrodef>
+</project>
